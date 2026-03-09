@@ -36,10 +36,9 @@ For convinience, we only select the `./realAWSCloudWatch` time series metric dat
 
 ## Model Selection
 
-- Regression
-- LightGBM
+- LogisticRegression
+- RandomForest
 - XGboost
-- LSTM
 
 ## Model Training
 
@@ -83,3 +82,9 @@ deployment
 monitoring
 retraining
 ```
+
+
+## A3. Key Issues
+1. Data Sampling.
+2. Feature Engineering.
+3. Accuracy.
