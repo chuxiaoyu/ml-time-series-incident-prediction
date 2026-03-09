@@ -1,4 +1,4 @@
-# ML for Time-series Incident Prediction
+# ML for Time Series Incident Prediction
 
 ## Task Description
 
@@ -10,20 +10,20 @@ The applicant may use any suitable public dataset or generate a synthetic time s
 The solution should include a clear description of the modeling choices, the evaluation setup (including alert thresholds and metrics), and an analysis of the results. During follow-up, the applicant should be able to explain the design decisions, discuss limitations, and outline how the approach could be adapted to a real alerting system.
 Preferably, solutions should be provided as a link to a public GitHub repository.
 
-
+## Structure
 
 ## Problem Formulation
 Goal: Predict whether an incident occurs within next H time steps using previous W time steps.
 
-Problem Type: Supervised Machine Learning Classification Task on or Multi-variate Time Series Data
+Problem Type: Supervised Machine Learning Binary-Classification Task on Multi-Variate Time Series Data
 
 ## Dataset Preparasion
 
 ### Overview of the Dataset
 Data Source: [Numenta Anomaly Benchmark (NAB)](https://www.kaggle.com/datasets/boltzmannbrain/nab/discussion/177967) and its [labeled data](https://github.com/numenta/NAB/tree/master/labels).
-For convinience, we only select the `./realAWSCloudWatch` time series metric data. The label anomaly time inteval is in `conbined_windows.json`.
+For convinience, we only select the `./realAWSCloudWatch` time series metric data, because it is collected by CloudWatch and thus more related to the project description. The labeled anomaly time inteval is in `conbined_windows.json`.
 
-(NOTE: To simplify, in this project, we see `anomaly` and `incident` as same concepts.)
+(NOTE: In this project, we see *anomaly* and *incident* as same concepts.)
 
 
 ### Data Processing
@@ -37,24 +37,49 @@ For convinience, we only select the `./realAWSCloudWatch` time series metric dat
 ## Model Selection
 
 - Regression
+- LightGBM
 - XGboost
 - LSTM
 
 ## Model Training
 
-## Results Evaluation
+## Model Evaluation
 
 ### Metrics
-Precision
-Recall
-F1-Score
+- Performance: Precision, Recall, F1-Score.
+- Latency: Train Time, Inference Time.
+- Resource Usage.
 
 ## Limitations and Improvements
 
-## Adaption Discussion
+1. Data engineering.
+2. Feature engineering. Are the features useful for prediction?
+3. Problem formulation. Multi-step prediction.
+4. Models Training.
+5. Model Evaluation. Lead time for incident detection.
 
+## How to adapt it to cloud alert system?
+1. Deployment.
+2. Monitoring.
+3. Retraining.
 
 
 ## Appendix
 
-### A1. Cloud Incident Datasets
+### A1. Time Budget
+- Day1: task exploration, problem formulation, dataset selection, data processing.
+- Day2: model selection, traning, and evaluation.
+- Day3: clean code, write README, task submission. 
+
+## A2. ML Pipeline
+
+```
+data engineering
+feature engineering
+problem formulation
+model selection
+evaluation
+deployment
+monitoring
+retraining
+```

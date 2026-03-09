@@ -6,7 +6,8 @@ from pathlib import Path
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 START = "2014-04-10 00:00:00"
-END = "2014-04-16 14:20:00"
+# END = "2014-04-16 14:20:00"
+END = "2014-04-19 00:00:00"
 
 
 def sample_merged_anomaly(

@@ -27,13 +27,8 @@ def build_sliding_windows(
     Returns (X, y) and optionally saves to CSV with columns t1_value4, t1_value5, ..., t6_value17, y.
     """
     if input_path is None:
-        input_path = _PROJECT_ROOT / "data" / "merged_metrics_with_anomaly_sample.csv"
+        input_path = _PROJECT_ROOT / "data" / "merged_metrics_with_anomaly_samples.csv"
     input_path = Path(input_path)
-    # Allow plural filename if present
-    if not input_path.exists():
-        alt = _PROJECT_ROOT / "data" / "merged_metrics_with_anomaly_samples.csv"
-        if alt.exists():
-            input_path = alt
     if not input_path.exists():
         raise FileNotFoundError(f"Not found: {input_path}")
 
@@ -48,7 +43,8 @@ def build_sliding_windows(
     if "anomaly" not in df.columns:
         raise ValueError("Input must contain an 'anomaly' column")
 
-    # Drop rows with NaN in any value column so X is complete
+    # Forward-fill NaN values, then drop any remaining leading NaN rows
+    df[value_cols] = df[value_cols].ffill()
     df = df.dropna(subset=value_cols).reset_index(drop=True)
     n_features = len(value_cols)
     expected_X_features = h_steps * n_features
