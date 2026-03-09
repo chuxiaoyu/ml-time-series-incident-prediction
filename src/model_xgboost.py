@@ -1,3 +1,6 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+
 import pandas as pd
 import numpy as np
 
@@ -41,6 +44,7 @@ model = XGBClassifier(
     learning_rate=0.1,
     scale_pos_weight=scale_pos_weight,
     eval_metric="logloss",
+    nthread=1,
     random_state=42,
 )
 

@@ -85,6 +85,6 @@ retraining
 
 
 ## A3. Key Issues
-1. Data Sampling.
+1. Data Sampling. Because the test / valid / test split should be 
 2. Feature Engineering.
 3. Accuracy.

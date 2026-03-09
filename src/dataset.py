@@ -31,12 +31,13 @@ OUT_VAL = _DATA_DIR / "val.csv"
 OUT_TEST = _DATA_DIR / "test.csv"
 
 # --- Default parameters ---
-SAMPLE_START = "2014-04-10 00:00:00"
-SAMPLE_END = "2014-04-24 00:00:00"
+# SAMPLE_START = "2014-04-01 00:00:00"
+SAMPLE_START = "2013-10-09 00:00:00"
+SAMPLE_END = "2014-04-30 00:00:00"
 H_STEPS = 6   # history: 30 min at 5-min resolution
-W_STEPS = 2   # future:  10 min at 5-min resolution
-TRAIN_RATIO = 0.80
-VAL_RATIO = 0.10
+W_STEPS = 2   # future: 10 min at 5-min resolution
+SPLIT_VAL_START = "2014-04-17 00:00:00"
+SPLIT_TEST_START = "2014-04-21 00:00:00"
 
 
 # =============================================================================
@@ -173,8 +174,12 @@ def build_sliding_window(
     X = np.array(X_list, dtype=np.float64)
     y = np.array(y_list, dtype=np.int32)
 
+    # Save timestamp of the prediction point (first future step) for date-based splitting
+    timestamps = [df.iloc[i]["timestamp"] for i in range(h_steps, len(df) - w_steps + 1)]
+
     feature_names = [f"t{s}_{c}" for s in range(1, h_steps + 1) for c in value_cols]
     out_df = pd.DataFrame(X, columns=feature_names)
+    out_df["timestamp"] = timestamps
     out_df["y"] = y
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -184,31 +189,32 @@ def build_sliding_window(
 
 
 # =============================================================================
-# Step 5: Train / Val / Test split
+# Step 5: Train / Val / Test split (date-based)
 # =============================================================================
 def split_dataset(
-    input_path: Path = OUT_SLIDING,
+    windowed_path: Path = OUT_SLIDING,
     output_dir: Path = _DATA_DIR,
-    train_ratio: float = TRAIN_RATIO,
-    val_ratio: float = VAL_RATIO,
+    val_start: str = SPLIT_VAL_START,
+    test_start: str = SPLIT_TEST_START,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Time-based split (no shuffle): train → val → test."""
-    df = pd.read_csv(input_path)
-    n = len(df)
+    """Date-based split using the timestamp column saved in the windowed CSV."""
+    df = pd.read_csv(windowed_path)
+    df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-    train_end = int(n * train_ratio)
-    val_end = train_end + int(n * val_ratio)
+    val_start_ts = pd.to_datetime(val_start)
+    test_start_ts = pd.to_datetime(test_start)
 
-    train_df = df.iloc[:train_end]
-    val_df = df.iloc[train_end:val_end]
-    test_df = df.iloc[val_end:]
+    train_df = df[df["timestamp"] < val_start_ts].drop(columns=["timestamp"]).reset_index(drop=True)
+    val_df = df[(df["timestamp"] >= val_start_ts) & (df["timestamp"] < test_start_ts)].drop(columns=["timestamp"]).reset_index(drop=True)
+    test_df = df[df["timestamp"] >= test_start_ts].drop(columns=["timestamp"]).reset_index(drop=True)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     train_df.to_csv(output_dir / "train.csv", index=False)
     val_df.to_csv(output_dir / "val.csv", index=False)
     test_df.to_csv(output_dir / "test.csv", index=False)
 
-    print(f"[Step 5] Split → train={len(train_df)}, val={len(val_df)}, test={len(test_df)}")
+    print(f"[Step 5] Date-based split: train < {val_start} | val < {test_start} | test")
+    print(f"  train={len(train_df)}, val={len(val_df)}, test={len(test_df)}")
     for name, split in [("Train", train_df), ("Val", val_df), ("Test", test_df)]:
         print(f"  {name}: {split['y'].value_counts().to_dict()}")
     return train_df, val_df, test_df
