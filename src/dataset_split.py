@@ -6,8 +6,8 @@ from pathlib import Path
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Time-based split ratios: train, val, test
-TRAIN_RATIO = 0.70
-VAL_RATIO = 0.15
+TRAIN_RATIO = 0.80
+VAL_RATIO = 0.10
 # test = 1 - train - val
 
 

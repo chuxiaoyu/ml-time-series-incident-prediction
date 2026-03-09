@@ -62,7 +62,7 @@ print(classification_report(y_test, test_pred))
 
 # set threshold to 0.3
 test_prob = model.predict_proba(X_test)[:,1]
-threshold = 0.3
+threshold = 0.5
 test_pred = (test_prob > threshold).astype(int)
 
 print("Test results:")
