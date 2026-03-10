@@ -30,7 +30,6 @@ Data Source:
 
 1. Check each node and month, select a sub-dataset which contains enough anomaly and normal data.
 - dataset_may_r162c05s02.csv
-- dataset_may_r183c05s02.csv
 
 
 1. Merge metrics. seperate metric CSV: timestamp, value   -> merged metric csv: timestamp, value1, value2, ...,. Input: `./data/realAWSCloudwatch`.
