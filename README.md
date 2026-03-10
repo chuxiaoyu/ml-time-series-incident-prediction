@@ -20,13 +20,18 @@ Problem Type: Supervised Machine Learning Binary-Classification Task on Multi-Va
 ## Dataset Preparasion
 
 ### Overview of the Dataset
-Data Source: [Numenta Anomaly Benchmark (NAB)](https://www.kaggle.com/datasets/boltzmannbrain/nab/discussion/177967) and its [labeled data](https://github.com/numenta/NAB/tree/master/labels).
-For convinience, we only select the `./realAWSCloudWatch` time series metric data, because it is collected by CloudWatch and thus more related to the project description. The labeled anomaly time inteval is in `conbined_windows.json`.
+Data Source: 
+
 
 (NOTE: In this project, we see *anomaly* and *incident* as same concepts.)
 
 
 ### Data Processing
+
+1. Check each node and month, select a sub-dataset which contains enough anomaly and normal data.
+- dataset_may_r162c05s02.csv
+- dataset_may_r183c05s02.csv
+
 
 1. Merge metrics. seperate metric CSV: timestamp, value   -> merged metric csv: timestamp, value1, value2, ...,. Input: `./data/realAWSCloudwatch`.
 2. Add anomaly labels based on `conbined_windows.json`. Output: `merged_metrics_with_anomaly.csv`.
@@ -85,6 +90,11 @@ retraining
 
 
 ## A3. Key Issues
-1. Data Sampling. Because the test / valid / test split should be 
-2. Feature Engineering.
-3. Accuracy.
+1. Dataset, Data Sampling, and Feature Engineering. 
+This issue cost a lot of my time.
+Firstly I found this data because it contains real data collected from CloudWatch: [Numenta Anomaly Benchmark (NAB)](https://www.kaggle.com/datasets/boltzmannbrain/nab/discussion/177967) and its [labeled data](https://github.com/numenta/NAB/tree/master/labels).
+I select the `./realAWSCloudWatch` time series metric data, because it is collected by CloudWatch and thus more related to the project description. The labeled anomaly time inteval is in `conbined_windows.json`.
+While I conduct the data processing pipeline, the model performance is really bad, either predict all class 0 or 1. I conduct several resampling but it didn't work at all. I tried:
+1. Data sampling and split. Because the test / valid / test split should be label balanced.
+2. Feature engineering.
+3. 

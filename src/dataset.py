@@ -163,23 +163,34 @@ def build_sliding_window(
     df = df.dropna(subset=value_cols).reset_index(drop=True)
 
     n_features = len(value_cols)
-    X_list, y_list = [], []
+    X_list, y_list, ts_list = [], [], []
 
     for i in range(h_steps, len(df) - w_steps + 1):
-        hist = df.iloc[i - h_steps : i][value_cols].values
-        X_list.append(hist.flatten())
+        hist = df.iloc[i - h_steps : i][value_cols].values  # (h_steps, n_features)
+
+        raw = hist.flatten()
+        # Per-metric aggregated features over the window
+        win_mean = hist.mean(axis=0)
+        win_std = hist.std(axis=0)
+        win_min = hist.min(axis=0)
+        win_max = hist.max(axis=0)
+
+        X_list.append(np.concatenate([raw, win_mean, win_std, win_min, win_max]))
+
         future_anomaly = df.iloc[i : i + w_steps]["anomaly"].values
         y_list.append(1 if future_anomaly.any() else 0)
+        ts_list.append(df.iloc[i]["timestamp"])
 
     X = np.array(X_list, dtype=np.float64)
     y = np.array(y_list, dtype=np.int32)
 
-    # Save timestamp of the prediction point (first future step) for date-based splitting
-    timestamps = [df.iloc[i]["timestamp"] for i in range(h_steps, len(df) - w_steps + 1)]
+    # Feature names: raw timestep features + aggregated stats per metric
+    raw_names = [f"t{s}_{c}" for s in range(1, h_steps + 1) for c in value_cols]
+    stat_names = [f"{stat}_{c}" for stat in ["mean", "std", "min", "max"] for c in value_cols]
+    feature_names = raw_names + stat_names
 
-    feature_names = [f"t{s}_{c}" for s in range(1, h_steps + 1) for c in value_cols]
     out_df = pd.DataFrame(X, columns=feature_names)
-    out_df["timestamp"] = timestamps
+    out_df["timestamp"] = ts_list
     out_df["y"] = y
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
