@@ -4,10 +4,11 @@ import time
 import pandas as pd
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, precision_score, recall_score
 from sklearn.preprocessing import StandardScaler
 
 _DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "CINECA"
+_RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
 
 
 def get_Xy(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
@@ -60,7 +61,26 @@ def main() -> None:
     print("Test results:")
     print(confusion_matrix(y_test, test_pred))
     print(classification_report(y_test, test_pred, zero_division=0))
+    prec = precision_score(y_test, test_pred, zero_division=0)
+    rec = recall_score(y_test, test_pred, zero_division=0)
+    f1 = f1_score(y_test, test_pred, zero_division=0)
+    print(f"Overall — Precision: {prec:.4f}, Recall: {rec:.4f}, F1: {f1:.4f}")
     print(f"Test prob — min: {test_prob.min():.4f}, max: {test_prob.max():.4f}, mean: {test_prob.mean():.4f}")
+
+    # Save summary metrics
+    _RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    summary = pd.DataFrame(
+        [
+            {
+                "model": "random_forest",
+                "train_time_sec": train_time,
+                "precision": float(prec),
+                "recall": float(rec),
+                "f1": float(f1),
+            }
+        ]
+    )
+    summary.to_csv(_RESULTS_DIR / "rf.csv", index=False)
 
 
 if __name__ == "__main__":
