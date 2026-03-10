@@ -1,17 +1,18 @@
 import pandas as pd
 
-train = pd.read_csv("data/train.csv")
-val = pd.read_csv("data/val.csv")
-test = pd.read_csv("data/test.csv")
+train = pd.read_csv("data/CINECA/train.csv")
+val = pd.read_csv("data/CINECA/val.csv")
+test = pd.read_csv("data/CINECA/test.csv")
 
-X_train = train.drop(columns=["y"])
-y_train = train["y"]
+def get_Xy(df):
+    exclude = [c for c in ("y", "timestamp") if c in df.columns]
+    X = df.drop(columns=exclude)
+    y = df["y"]
+    return X, y
 
-X_val = val.drop(columns=["y"])
-y_val = val["y"]
-
-X_test = test.drop(columns=["y"])
-y_test = test["y"]
+X_train, y_train = get_Xy(train)
+X_val, y_val = get_Xy(val)
+X_test, y_test = get_Xy(test)
 
 print(y_val.value_counts())
 print(y_test.value_counts())
@@ -62,7 +63,7 @@ print(classification_report(y_test, test_pred))
 
 # set threshold to 0.3
 test_prob = model.predict_proba(X_test)[:,1]
-threshold = 0.5
+threshold = 0.2
 test_pred = (test_prob > threshold).astype(int)
 
 print("Test results:")
