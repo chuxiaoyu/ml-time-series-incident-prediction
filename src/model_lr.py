@@ -1,5 +1,6 @@
 """Logistic regression for CINECA incident prediction."""
 
+import time
 import pandas as pd
 from pathlib import Path
 from sklearn.linear_model import LogisticRegression
@@ -31,7 +32,10 @@ def main() -> None:
     X_test = scaler.transform(X_test)
 
     model = LogisticRegression(max_iter=1000, class_weight="balanced")
+    t0 = time.perf_counter()
     model.fit(X_train, y_train)
+    train_time = time.perf_counter() - t0
+    print(f"Train time: {train_time:.3f}s\n")
 
     # Validation
     val_pred = model.predict(X_val)
@@ -42,7 +46,10 @@ def main() -> None:
     print(f"Val prob — min: {val_prob.min():.4f}, max: {val_prob.max():.4f}, mean: {val_prob.mean():.4f}\n")
 
     # Test
+    t0 = time.perf_counter()
     test_pred = model.predict(X_test)
+    inference_time = time.perf_counter() - t0
+    print(f"Inference time (test set, n={len(X_test)}): {inference_time:.3f}s\n")
     print("Test results:")
     print(confusion_matrix(y_test, test_pred))
     print(classification_report(y_test, test_pred))
