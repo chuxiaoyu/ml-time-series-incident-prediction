@@ -117,18 +117,34 @@ Key observations:
 
 - XGBoost achieves very high precision and recall (0.9859 each) and an F1-score of 0.9859, making it a strong alternative if additional tuning or handling of **more complex datasets** is desired, though its training time (~2.83 s) is longer.
 
-## [TODO] Limitations and Improvements
+## Limitations and Improvements
 
-1. Dataset split.
-2. Feature engineering. Are the features useful for prediction?
-3. Problem formulation. (1) Forcasting problem. (2) Multi-step prediction.
-4. Models selection and training.
-5. Model evaluation. Lead time for incident detection.
+### Data engineering
+1. Window size selection. The value of `W` and `H` were chosen heuristically. A more systematic approach (e.g., empirical search or domain-informed selection) may improve performance. 
+2. Only data from a single node was used, which raises concerns about the model’s ability to generalize.
+3. **Dataset splitting strategy.** Ideally, time-series data should be split chronologically, since the model should not use future information to predict past events; otherwise, this may introduce data leakage. In this project, time-based splitting was difficult for several reasons: (i) The available time span is relatively short, and anomalies tend to occur within specific time periods, making it difficult to obtain balanced normal/anomaly samples after splitting. (ii) The dataset is highly imbalanced, with anomalies occurring much less frequently than normal events.
 
-## [TODO] How to adapt it to cloud alert system?
-1. Deployment.
-2. Monitoring.
-3. Retraining.
+Possible improvements include: (1) Using the full dataset across multiple nodes and time periods. (2) Training and validating on earlier time periods while testing on a later time period to better simulate real-world deployment.
+
+### Feature engineering
+1. It is not checked whether all selected features contribute effectively to anomaly prediction. Some features may be redundant, noisy, or weakly correlated with anomalies, which can negatively affect model performance. Performing feature analysis (e.g., correlation analysis or feature importance evaluation) can remove redundant features to retain the most informative variables.
+
+### Problem formulation 
+1. Forcasting formulation. The problem can also be formulated as a time-series forecasting task, where the model predicts future system metrics and anomalies are detected based on deviations between predicted and observed values.
+2. Multi-step prediction. Instead of predicting a single future step, the model can be designed to predict multiple future time steps, allowing earlier detection of potential anomalies.
+
+
+### Model evaluation 
+
+1. Lead time for incident detection. In addition to standard classification metrics (precision, recall, f1), the model can be evaluated based on the lead time of incident detection, which measures how early the model can detect or anticipate an anomaly before it occurs.
+
+
+## How to adapt it to cloud alert system?
+1. **Deployment and inference.** The trained model can be deployed as a real-time inference service within the cloud monitoring pipeline. System metrics are continuously collected from cloud nodes, transformed into the data pipeline to sliding windows, and sent to the model for prediction. When the model detects an anomaly or predicts an abnormal state, an alert can be triggered and forwarded to the alerting system (e.g., incident management or monitoring dashboards).
+
+2. **Monitoring.** After deployment, the model should be continuously monitored to ensure reliable performance. This includes tracking prediction accuracy, false positive/false negative rates, and system latency Monitoring helps identify when the model’s performance degrades or when system behavior changes.
+
+3. **Retraining.** As system workloads and infrastructure evolve, the model should be periodically retrained using newly collected data. Retraining can be scheduled or triggered when performance drops or when significant data drift is detected. This ensures the model remains accurate and adapts to changes in the cloud environment.
 
 
 ## Appendix
@@ -143,7 +159,7 @@ Key observations:
 Data pipeline
 ```
 1. merge_metrics        — merge per-metric CSVs into one file, resample to 5-min
-2. add_anomaly          — label each timestamp with anomaly from combined_windows.json
+2. add_anomaly          — label each timestamp with anomaly
 3. sample               — select a time range and drop all-NaN columns
 4. build_sliding_window — create (X, y) sliding-window dataset
 5. split_dataset        — time-based train / val / test split
@@ -163,4 +179,4 @@ ML pipeline
 
 
 ### A3. Other Issues
-1. Firstly I found this data because it contains real data collected from CloudWatch: [Numenta Anomaly Benchmark (NAB)](https://www.kaggle.com/datasets/boltzmannbrain/nab/discussion/177967) and its [labeled data](https://github.com/numenta/NAB/tree/master/labels). I select the `./realAWSCloudWatch` time series metric data, because it is collected by CloudWatch and thus more related to the project description. The labeled anomaly time inteval is in `conbined_windows.json`. While I conduct the data processing pipeline, the model performance is really bad, either predict all class 0 or 1. I conduct several resampling but it didn't work at all.
+1. Firstly I used the dataset of [Numenta Anomaly Benchmark (NAB)](https://www.kaggle.com/datasets/boltzmannbrain/nab/discussion/177967) and its [labeled data](https://github.com/numenta/NAB/tree/master/labels). I select the `./realAWSCloudWatch` time series metric data, because it is collected by CloudWatch and thus more related to the project description. The labeled anomaly time inteval is in `conbined_windows.json`. While I conduct the data processing pipeline, the model performance is really bad, either predict all class 0 or 1. I conduct several resampling but it didn't work at all.
