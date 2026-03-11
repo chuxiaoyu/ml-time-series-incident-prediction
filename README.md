@@ -133,11 +133,11 @@ Possible improvements include: (1) Using the full dataset across multiple nodes 
 
 
 ## How to adapt it to cloud alert system?
-1. **Deployment and inference.** The trained model can be deployed as a real-time inference service within the cloud monitoring pipeline. System metrics are continuously collected from cloud nodes, transformed into the data pipeline to sliding windows, and sent to the model for prediction. When the model detects an anomaly or predicts an abnormal state, an alert can be triggered and forwarded to the alerting system (e.g., incident management or monitoring dashboards).
+1. **Deployment and inference.** The trained model can be deployed as a real-time inference service within the cloud monitoring pipeline. an AWS Lambda function can run frequently (e.g., every minute) to continuously collected system metrics from CloudWatch, transformed into the data pipeline to sliding windows, and sent to the model for prediction. If the predicted anomaly risk exceeds a predefined threshold, the function triggers an alert through the monitoring or incident management system.
 
-2. **Monitoring.** After deployment, the model should be continuously monitored to ensure reliable performance. This includes tracking prediction accuracy, false positive/false negative rates, and system latency Monitoring helps identify when the model’s performance degrades or when system behavior changes.
+2. **Monitoring.** The prediction Lambda function continuously processes incoming metrics and generates alerts when abnormal behavior is detected. In addition to alert generation, the system should track metrics such as alert frequency, false positives, prediction latency, and system health to ensure the alerting pipeline operates reliably.
 
-3. **Retraining.** As system workloads and infrastructure evolve, the model should be periodically retrained using newly collected data. Retraining can be scheduled or triggered when performance drops or when significant data drift is detected. This ensures the model remains accurate and adapts to changes in the cloud environment.
+3. **Retraining.** A second AWS Lambda function can run periodically (e.g., daily) to retrain or update the model using newly collected monitoring data. The retrained model artifacts can be stored in Amazon S3, allowing the prediction Lambda to load the latest model version. This pipeline ensures the model adapts to evolving system behavior while maintaining up-to-date anomaly detection capability.
 
 
 ## Appendix
