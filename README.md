@@ -11,13 +11,6 @@ project_folder/
 └── requirements.txt
 ```
 
-Setup
-```
-conda create -n incident-predict
-conda activate incident-predict
-pip install -r requirements.txt
-```
-
 ## Problem Formulation
 **Goal:** Predict whether an incident occurs within next `H` time steps using previous `W` time steps.
 
